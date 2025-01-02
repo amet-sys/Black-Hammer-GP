@@ -146,6 +146,10 @@
             font-size: 24px;
             margin-bottom: 20px;
         }
+
+        .filter {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -171,6 +175,16 @@
     <main>
         <section class="tests-list">
             <p class="title">Количество тестов: <span class="questsCounter"></span></p>
+            <div class="filter">
+                <label for="disciplineFilter">Выберите дисциплину:</label>
+                <select id="disciplineFilter">
+                    <option value="all">Все</option>
+                    <option value="Математика">Математика</option>
+                    <option value="Дел. Коммуникация">Дел. Коммуникация</option>
+                    <option value="Физика">Физика</option>
+                    <option value="Химия">Химия</option>
+                </select>
+            </div>
             <div class="show-not"></div>
             <ul class="tests"></ul>
             <button class="create-new"><a href="creating.html" style="color: white; text-decoration: none;">Создать новый тест</a></button>
@@ -181,16 +195,22 @@
         </section>
     </main>
     <script>
-        const createNew = document.querySelector(".create-new");
         const questsCounter = document.querySelector(".questsCounter");
+        const disciplineFilter = document.getElementById("disciplineFilter");
 
         function loadTests() {
             const getTests = JSON.parse(localStorage.getItem("tests")) || [];
             const testsList = document.querySelector(".tests");
             testsList.innerHTML = "";
 
-            if (getTests.length > 0) {
-                getTests.forEach((item, index) => {
+            const selectedDiscipline = disciplineFilter.value;
+
+            const filteredTests = getTests.filter(test => 
+                selectedDiscipline === "all" || test.discipline === selectedDiscipline
+            );
+
+            if (filteredTests.length > 0) {
+                filteredTests.forEach((item, index) => {
                     testsList.innerHTML += `
                         <li class="test-item" data-index="${index}">
                             <h3>${item.title}</h3>
@@ -202,7 +222,7 @@
                 showNotElement.innerHTML = `<h3>Тесты отсутствуют</h3>`;
             }
 
-            questsCounter.textContent = getTests.length;
+            questsCounter.textContent = filteredTests.length;
 
             document.querySelectorAll(".test-item").forEach((item) => {
                 item.addEventListener("click", (event) => {
@@ -221,6 +241,7 @@
                 const test = getTests[index];
                 rightPanel.innerHTML = `
                     <h2>${test.title}</h2>
+                    <p>${test.description}</p>
                     <ul>
                         ${test.questions.map((q, i) => `
                             <li>
@@ -255,13 +276,9 @@
             }
         }
 
-        loadTests();
+        disciplineFilter.addEventListener("change", loadTests);
 
-        if (createNew) {
-            createNew.addEventListener("click", () => {
-                // Логика для создания нового теста
-            });
-        }
+        loadTests();
     </script>
 </body>
 </html>
