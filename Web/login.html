@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <style>
+        body {
+            overflow: hidden;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url(https://fotoblik.ru/wp-content/uploads/2023/09/sinii-fon-17.webp);
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            filter: blur(5px); 
+            z-index: -1;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 30px;
+            width: 600px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container h1 {
+            margin: 0;
+            text-align: center;
+            font-size: 40px;
+            color: rgb(46, 46, 46);
+        }
+
+        .container p {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 22px;
+            color: rgb(52, 140, 255);
+        }
+
+        .container .buts {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .container .buts button {
+            width: 100%; 
+            margin-bottom: 15px; 
+            height: 50px;
+            border-radius: 10px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 3px 3px 5px rgba(131, 131, 131, 0.5);
+            font-size: 18px;
+        }
+
+        .container .buts button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .codeauth {
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
+            height: 50px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            border: 1px solid rgb(184, 184, 184);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 18px;
+        }
+
+        .codeauth:hover {
+            background-color: #e1e1e1;
+            transform: scale(1.05);
+        }
+
+        .logo {
+            width: 28px;
+            height: 28px;
+            vertical-align: middle;
+            margin-right: 10px; 
+        }
+        .logo2 {
+            width: 28px;
+            height: 28px;
+            vertical-align: middle;
+            margin-right: 1px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Авторизация</h1>
+        <p>Пожалуйста, авторизуйтесь через:</p>
+        <div class="buts">
+            <button onclick="authorize('git')">
+                <img class="logo" src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub"> 
+                Войти через GitHub
+            </button>
+            <button onclick="authorize('yndex')">
+                <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Yandex_Browser_icon.svg/2048px-Yandex_Browser_icon.svg.png" alt="Yandex"> 
+                Яндекс ID
+            </button>
+        </div>
+        <button onclick="authorize('code')" class="codeauth">
+            <img class="logo2" src="https://s1.iconbird.com/ico/0612/MustHave/w256h2561339195787Key256x256.png" alt="Код"> 
+            Код
+        </button>
+    </div>
+</body>
+
+<script>
+    function authorize(type) {
+        const loginToken = 'loginToken';
+        window.location.href = `/login?type=${type}&state=${loginToken}`;
+    }
+</script>
+
+</html>

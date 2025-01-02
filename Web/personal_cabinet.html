@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Личный кабинет</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+
+        header {
+            background-color: #4c69e9;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar ul {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .navbar li {
+            position: relative;
+            margin-right: 20px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        main {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .profile {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .profile h2 {
+            margin-bottom: 20px;
+        }
+
+        .profile label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .profile input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .save-btn {
+            background-color: #4c69e9;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .save-btn:hover {
+            background-color: #3a54c1;
+        }
+
+        .message {
+            margin-top: 20px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="personal_cabinet.html">Личный кабинет</a></li>
+                <li><a href="start.html">Выход</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="profile">
+            <h2>Редактирование профиля</h2>
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" />
+            
+            <label for="email">Электронная почта:</label>
+            <input type="email" id="email" />
+            
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" />
+            
+            <button class="save-btn">Сохранить изменения</button>
+            <div class="message"></div>
+        </section>
+    </main>
+    <script>
+        const usernameInput = document.getElementById("username");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const saveBtn = document.querySelector(".save-btn");
+        const messageDiv = document.querySelector(".message");
+
+        // Загрузка данных пользователя из localStorage
+        function loadUser Data() {
+            const userData = JSON.parse(localStorage.getItem("user")) || {};
+            usernameInput.value = userData.username || "";
+            emailInput.value = userData.email || "";
+            passwordInput.value = userData.password || ""; // Пароль отображается для редактирования
+        }
+
+        // Сохранение данных пользователя в localStorage
+        function saveUser Data() {
+            const userData = {
+                username: usernameInput.value,
+                email: emailInput.value,
+                password: passwordInput.value,
+            };
+            localStorage.setItem("user", JSON.stringify(userData));
+            messageDiv.textContent = "Данные успешно сохранены!";
+        }
+
+        saveBtn.addEventListener("click", saveUser Data);
+
+        // Загрузка данных при загрузке страницы
+        loadUser Data();
+    </script>
+</body>
+</html>
