@@ -119,7 +119,7 @@
         <h1>Авторизация</h1>
         <p>Пожалуйста, авторизуйтесь через:</p>
         <div class="buts">
-            <button onclick="authorize('git')">
+            <button onclick="authorize('github')">
                 <img class="logo" src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub"> 
                 Войти через GitHub
             </button>
@@ -136,10 +136,16 @@
 </body>
 
 <script>
+    function generateToken() {
+        // Генерация случайного токена
+        return Math.random().toString(36).substr(2, 10); // Генерирует строку из 10 символов
+    }
+
     function authorize(type) {
-        const loginToken = 'loginToken';
+        const loginToken = generateToken(); // Генерация токена
         window.location.href = `/login?type=${type}&state=${loginToken}`;
     }
 </script>
+
 
 </html>

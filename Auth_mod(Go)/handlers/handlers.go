@@ -23,8 +23,9 @@ var stateStore = make(map[string]*structs.AuthState)
 var CodeStateStore = make(map[string]*structs.CodeAuthState)
 
 func HandleAuth(w http.ResponseWriter, r *http.Request) {
+	log.Print("Начало процесса")
 	authType := r.URL.Query().Get("type")
-	token := r.URL.Query().Get("token")
+	token := r.URL.Query().Get("state")
 
 	var authURL string
 	if authType == "github" {
@@ -54,7 +55,7 @@ func HandleAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleCallback(w http.ResponseWriter, r *http.Request) {
-	token := r.URL.Query().Get("token")
+	token := r.URL.Query().Get("state")
 	Type := r.URL.Query().Get("type")
 	if Type == "code" {
 		code := r.URL.Query().Get("code")
