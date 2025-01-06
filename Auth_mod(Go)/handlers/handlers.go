@@ -13,7 +13,9 @@ import (
 	generators "main.go/generators"
 )
 
-var UserCollection = database.ConnectToMongo().Database("authDB").Collection("users")
+var mongoConn = database.ConnectToMongo()
+var dbConn = mongoConn.Database("authDB")
+var UserCollection = dbConn.Collection("users")
 
 const clientIDGitHub = "Ov23liVkA4a0IpHIuOzp"        //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
 const clientIDYandex = "YOUR_YANDEX_CLIENT_ID"       //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
