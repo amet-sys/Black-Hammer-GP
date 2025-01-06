@@ -27,6 +27,7 @@ var MySecretKey string = ""
 const GitHubTokenURL = "https://github.com/login/oauth/access_token"
 const clientSecretGitHub = "5ba53d9ee5f32ba008e6e9a416e3f69bf50d0f46"
 const YandexTokenURL = "https://oauth.yandex.com/token"
+const clientSecretYandex = "f7a48a1d3d80454388fc55cdcb857730"
 
 // Меняем код на токен доступа Гитхаба
 func CodeExchancherGitHub(code string, client_id string) (string, error) {
@@ -70,7 +71,7 @@ func CodeExchancherGitHub(code string, client_id string) (string, error) {
 
 // Меняем код на токен доступа Яндекса
 func CodeExchancherYandex(code string, client_id string) (string, error) {
-	data := []byte(fmt.Sprintf(`{"grant_type": "authorization_code", "client_id": "%s", "code": "%s"}`, client_id, code))
+	data := []byte(fmt.Sprintf(`{"grant_type": "authorization_code", "code": "%s", "client_id": "%s", "client_secret": "%s"}`, code, client_id, clientSecretYandex))
 	req, err := http.NewRequest("POST", YandexTokenURL, bytes.NewBuffer(data))
 	if err != nil {
 		return "", err
@@ -84,21 +85,17 @@ func CodeExchancherYandex(code string, client_id string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to exchange code: %s", resp.Status)
-	}
-
-	body, err := io.ReadAll(resp.Body)
+	log.Printf("Response body: %s", body) // Выводим тело ответа для отладки
+	responseString := string(body)
+	values, err := url.ParseQuery(responseString)
 	if err != nil {
-		return "", err
+		// обработка ошибки
 	}
 
-	var tokenResponse structs.TokenResponseYandex
-	if err := json.Unmarshal(body, &tokenResponse); err != nil {
-		return "", err
-	}
-
-	return tokenResponse.AccessToken, nil
+	// Получаем access_token
+	AccessToken := values.Get("access_token")
+	log.Print(AccessToken)
+	return AccessToken, nil
 }
 
 // Получаем почту с помощью токена в Гитхабе
@@ -145,12 +142,18 @@ func GetEmailYandex(token string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	var userInfo structs.YandexUser
-	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
+	// Изменяем способ обработки ответа
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return "", err
 	}
-
-	return userInfo.Email, nil
+	var user *structs.YandexUser
+	err = json.Unmarshal([]byte(body), &user)
+	if err != nil {
+		fmt.Println("Ошибка при парсинге JSON:", err)
+		return "", err
+	}
+	return user.Email, nil
 }
 
 // Генерация JWT токена
@@ -213,8 +216,7 @@ func DatabaseUserWriter(email string, UserCollection *mongo.Collection) (structs
 	err = UserCollection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
 
 	if err != nil {
-		// Если пользователь не найден, создаем нового
-		log.Print("начало создания")
+		// Если пользователь не найден, создаем нового\
 		cnt, _ := UserCollection.CountDocuments(context.TODO(), struct{}{})
 		if cnt <= 4 {
 			Role = "Admin"

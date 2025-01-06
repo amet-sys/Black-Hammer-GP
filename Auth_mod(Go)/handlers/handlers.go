@@ -18,7 +18,7 @@ var dbConn = mongoConn.Database("authDB")
 var UserCollection = dbConn.Collection("users")
 
 const clientIDGitHub = "Ov23liVkA4a0IpHIuOzp"        //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
-const clientIDYandex = "YOUR_YANDEX_CLIENT_ID"       //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
+const clientIDYandex = "6785f7558d124ef8ad9f626c091f5e18"       //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
 const redirectURI = "http://localhost:5501/callback" //Для продуктивной версии Вашего приложения Redirect URI должен указывать на адрес Вашего сервера, например, https://yourdomain.com/callback.
 
 var stateStore = make(map[string]*structs.AuthState)
@@ -161,6 +161,7 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 
 			// Генерация JWT токенов
 			accessToken, refreshToken := generators.GenerateTokens(user)
+			log.Print(user)
 			user.Tokens = append(user.Tokens, refreshToken)
 			// Обновление состояния\
 			authState.AccessToken = accessToken
