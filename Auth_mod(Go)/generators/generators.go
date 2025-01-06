@@ -239,7 +239,7 @@ func DatabaseUserWriter(email string, UserCollection *mongo.Collection) (structs
 		}
 		_, err = UserCollection.InsertOne(context.TODO(), user)
 		if err != nil {
-			log.Print("Не удалось добавить пользователя", err)
+			log.Print("Не удалось добавить пользователя ", err)
 			return user, "Не удалось добавить пользователя"
 		}
 	}
