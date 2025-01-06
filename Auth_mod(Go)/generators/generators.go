@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -23,35 +25,47 @@ var MySecretKey string = ""
 
 // Ссылка для обмена кода на токен доступа в Гитхаб и Яндекс
 const GitHubTokenURL = "https://github.com/login/oauth/access_token"
+const clientSecretGitHub = "5ba53d9ee5f32ba008e6e9a416e3f69bf50d0f46"
 const YandexTokenURL = "https://oauth.yandex.com/token"
 
 // Меняем код на токен доступа Гитхаба
 func CodeExchancherGitHub(code string, client_id string) (string, error) {
-	data := []byte(fmt.Sprintf(`{"client_id": "%s", "code": "%s"}`, client_id, code))
+	data := map[string]string{
+		"client_id":     client_id,
+		"client_secret": clientSecretGitHub,
+		"code":          code,
+	}
 
-	req, err := http.NewRequest("POST", GitHubTokenURL, bytes.NewBuffer(data))
+	jsonData, err := json.Marshal(data)
 	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
 		return "", err
 	}
-	req.Header.Set("Accept", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Отправляем POST-запрос
+	resp, err := http.Post(GitHubTokenURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
+		fmt.Println("Error making request:", err)
 		return "", err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to exchange code for token: %s", resp.Status)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Print(err)
+		return "Error1", err
+	}
+	log.Printf("Response body: %s", body) // Выводим тело ответа для отладки
+	responseString := string(body)
+	values, err := url.ParseQuery(responseString)
+	if err != nil {
+		// обработка ошибки
 	}
 
-	var tokenResponse structs.TokenResponseGitHub
-	if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
-		return "", err
-	}
-
-	return tokenResponse.AccessToken, nil
+	// Получаем access_token
+	AccessToken := values.Get("access_token")
+	log.Print(AccessToken)
+	return AccessToken, nil
 }
 
 // Меняем код на токен доступа Яндекса
@@ -102,12 +116,18 @@ func GetEmailGithub(token string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	var userInfo structs.GitHubUser
-	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
+	// Изменяем способ обработки ответа
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return "", err
 	}
-
-	return userInfo.Email, nil
+	var user *structs.GitHubUser
+	err = json.Unmarshal([]byte(body), &user)
+	if err != nil {
+		fmt.Println("Ошибка при парсинге JSON:", err)
+		return "", err
+	}
+	return user.Email, nil
 }
 
 // Получаем почту с помощью токена в Яндексе
@@ -194,6 +214,7 @@ func DatabaseUserWriter(email string, UserCollection *mongo.Collection) (structs
 
 	if err != nil {
 		// Если пользователь не найден, создаем нового
+		log.Print("начало создания")
 		cnt, _ := UserCollection.CountDocuments(context.TODO(), struct{}{})
 		if cnt <= 4 {
 			Role = "Admin"
@@ -218,7 +239,7 @@ func DatabaseUserWriter(email string, UserCollection *mongo.Collection) (structs
 		}
 		_, err = UserCollection.InsertOne(context.TODO(), user)
 		if err != nil {
-
+			log.Print("Не удалось добавить пользователя", err)
 			return user, "Не удалось добавить пользователя"
 		}
 	}

@@ -15,17 +15,21 @@ import (
 
 var UserCollection = database.ConnectToMongo().Database("authDB").Collection("users")
 
-const clientIDGitHub = "YOUR_GITHUB_CLIENT_ID"       //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
+const clientIDGitHub = "Ov23liVkA4a0IpHIuOzp"        //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
 const clientIDYandex = "YOUR_YANDEX_CLIENT_ID"       //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
-const redirectURI = "http://localhost:8080/callback" //Для продуктивной версии Вашего приложения Redirect URI должен указывать на адрес Вашего сервера, например, https://yourdomain.com/callback.
+const redirectURI = "http://localhost:5501/callback" //Для продуктивной версии Вашего приложения Redirect URI должен указывать на адрес Вашего сервера, например, https://yourdomain.com/callback.
 
 var stateStore = make(map[string]*structs.AuthState)
 var CodeStateStore = make(map[string]*structs.CodeAuthState)
+var types = []string{}
+var tokens = []string{}
 
 func HandleAuth(w http.ResponseWriter, r *http.Request) {
-	log.Print("Начало процесса")
+
 	authType := r.URL.Query().Get("type")
 	token := r.URL.Query().Get("state")
+	types = append(types, authType)
+	tokens = append(tokens, token)
 
 	var authURL string
 	if authType == "github" {
@@ -50,13 +54,14 @@ func HandleAuth(w http.ResponseWriter, r *http.Request) {
 		ExpiresAt: time.Now().Add(5 * time.Minute),
 		Status:    "Не получен",
 	}
-
 	http.Redirect(w, r, authURL, http.StatusFound)
 }
 
 func HandleCallback(w http.ResponseWriter, r *http.Request) {
-	token := r.URL.Query().Get("state")
-	Type := r.URL.Query().Get("type")
+	token := tokens[0]
+	Type := types[0]
+	types = []string{}
+	tokens = []string{}
 	if Type == "code" {
 		code := r.URL.Query().Get("code")
 		codeAuthState, exists := CodeStateStore[code]
@@ -102,7 +107,7 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Authorization failed", http.StatusUnauthorized)
 				return
 			}
-
+			log.Print("Начало процесса")
 			// Обмен кода на токен доступа
 			code := r.URL.Query().Get("code") //Получение кода
 			var token, email string
@@ -128,6 +133,7 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 			switch Type {
 			case "github":
 				email, err = generators.GetEmailGithub(token)
+				log.Print(email)
 				if err != nil {
 					log.Print("Undefind")
 				}

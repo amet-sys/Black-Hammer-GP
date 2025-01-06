@@ -143,7 +143,7 @@
 
     function authorize(type) {
         const loginToken = generateToken(); // Генерация токена
-        window.location.href = `/login?type=${type}&state=${loginToken}`;
+        window.location.href = `http://localhost:5501/login?type=${type}&state=${loginToken}`;
     }
 </script>
 

@@ -51,7 +51,8 @@ var TeacherAccess = []string{
 }
 
 type TokenResponseGitHub struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:" access_token"`
+	Scope       string `json:"scope"`
 	TokenType   string `json:"token_type"`
 }
 
@@ -90,7 +91,7 @@ type CodeAuthState struct {
 }
 
 // Формируем HTML-страницу с сообщением об успешной авторизации
-var AppLink = "https://yourapp.com" // Ссылка на приложение
+var AppLink = "http://127.0.0.1:5502/Full_project/Black-Hammer-GP/Web/index.html" // Ссылка на приложение
 var HtmlResponse = fmt.Sprintf(`
 	<!DOCTYPE html>
 		<html lang="ru">
