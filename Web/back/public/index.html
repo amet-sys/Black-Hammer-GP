@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Тесты</title>
     <style>
+        /* Стили остаются без изменений */
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -12,7 +13,6 @@
             color: #333;
             overflow: hidden; /* Скрыть прокрутку во время загрузки */
         }
-
         .loader {
             position: fixed;
             top: 0;
@@ -27,18 +27,15 @@
             opacity: 1;
             transition: opacity 0.5s ease;
         }
-
         .loader.hidden {
             opacity: 0;
             pointer-events: none; /* Отключить взаимодействие с элементом */
         }
-
         .loader h1 {
             font-size: 24px;
             color: #4c69e9;
             animation: fadeIn 1s ease infinite alternate;
         }
-
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -47,7 +44,6 @@
                 opacity: 1;
             }
         }
-
         header {
             background-color: #4c69e9;
             padding: 20px;
@@ -57,24 +53,20 @@
             border-radius: 0 0 20px 20px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-
         .navbar {
             display: flex;
             align-items: center;
         }
-
         .navbar ul {
             display: flex;
             list-style-type: none;
             padding: 0;
             margin: 0;
         }
-
         .navbar li {
             position: relative;
             margin-right: 20px;
         }
-
         .navbar a {
             color: white;
             text-decoration: none;
@@ -82,17 +74,14 @@
             border-radius: 5px;
             transition: background-color 0.3s;
         }
-
         .navbar a:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-
         main {
             display: flex;
             padding: 20px;
             gap: 20px;
         }
-
         .tests-list {
             flex: 1;
             background-color: #ffffff;
@@ -101,7 +90,6 @@
             padding: 20px;
             overflow-y: auto;
         }
-
         .current-test {
             flex: 1;
             background-color: #ffffff;
@@ -109,7 +97,6 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
-
         .test-item {
             background-color: #e1f5fe;
             border-radius: 5px;
@@ -117,11 +104,9 @@
             margin-bottom: 10px;
             transition: transform 0.2s;
         }
-
         .test-item:hover {
             transform: scale(1.02);
         }
-
         .create-new {
             background-color: #00aaff;
             color: white;
@@ -131,20 +116,16 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-
         .create-new:hover {
             background-color: #0088cc;
         }
-
         .title {
             font-size: 24px;
             margin-bottom: 20px;
         }
-
         .filter {
             margin-bottom: 20px;
         }
-
         .save-answers {
             background-color: #4caf50;
             color: white;
@@ -155,7 +136,6 @@
             transition: background-color 0.3s;
             margin-top: 20px;
         }
-
         .save-answers:hover {
             background-color: #45a049;
         }
@@ -200,39 +180,55 @@
         const disciplineFilter = document.getElementById("disciplineFilter");
         const loader = document.querySelector(".loader");
 
-        function loadTests() {
-            const getTests = JSON.parse(localStorage.getItem("tests")) || [];
-            const testsList = document.querySelector(".tests");
-            testsList.innerHTML = "";
-
-            const selectedDiscipline = disciplineFilter.value;
-
-            const filteredTests = getTests.filter(test => 
-                selectedDiscipline === "all" || test.discipline === selectedDiscipline
-            );
-
-            if (filteredTests.length > 0) {
-                filteredTests.forEach((item, index) => {
-                    testsList.innerHTML += `
-                        <li class="test-item" data-index="${getTests.indexOf(item)}">
-                            <h3>${item.title}</h3>
-                            <p>${item.description}</p>
-                        </li>`;
+        async function loadTests() {
+            const token = localStorage.getItem("authToken"); // Получаем токен из localStorage
+            try {
+                const response = await fetch('https://yourapi.com/tests', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}` // Добавляем токен в заголовок
+                    }
                 });
-            } else {
-                const showNotElement = document.querySelector(".show-not");
-                showNotElement.innerHTML = `<h3>Тесты отсутствуют</h3>`;
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при загрузке тестов');
+                }
+
+                const getTests = await response.json();
+                const testsList = document.querySelector(".tests");
+                testsList.innerHTML = "";
+
+                const selectedDiscipline = disciplineFilter.value;
+
+                const filteredTests = getTests.filter(test => 
+                    selectedDiscipline === "all" || test.discipline === selectedDiscipline
+                );
+
+                if (filteredTests.length > 0) {
+                    filteredTests.forEach((item, index) => {
+                        testsList.innerHTML += `
+                            <li class="test-item" data-index="${getTests.indexOf(item)}">
+                                <h3>${item.title}</h3>
+                                <p>${item.description}</p>
+                            </li>`;
+                    });
+                } else {
+                    const showNotElement = document.querySelector(".show-not");
+                    showNotElement.innerHTML = `<h3>Тесты отсутствуют</h3>`;
+                }
+
+                questsCounter.textContent = filteredTests.length;
+
+                document.querySelectorAll(".test-item").forEach((item) => {
+                    item.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        const index = item.getAttribute("data-index");
+                        displayTest(index);
+                    });
+                });
+            } catch (error) {
+                alert(error.message);
             }
-
-            questsCounter.textContent = filteredTests.length;
-
-            document.querySelectorAll(".test-item").forEach((item) => {
-                item.addEventListener("click", (event) => {
-                    event.preventDefault();
-                    const index = item.getAttribute("data-index");
-                    displayTest(index);
-                });
-            });
         }
 
         function displayTest(index) {
@@ -244,7 +240,6 @@
                 const answersSaved = test.questions.every((q, i) => localStorage.getItem(`selectedAnswer_${index}_${i}`));
                 
                 if (answersSaved) {
-                    // Показать сохраненные ответы
                     rightPanel.innerHTML = `
                         <h2>${test.title}</h2>
                         <p>${test.description}</p>
@@ -260,7 +255,6 @@
                         </ul>
                         <p>Ответы сохранены. Вы не можете их изменить.</p>`;
                 } else {
-                    // Показать вопросы с возможностью ответить
                     rightPanel.innerHTML = `
                         <h2>${test.title}</h2>
                         <p>${test.description}</p>
@@ -280,7 +274,6 @@
                         </ul>
                         <button class="save-answers">Сохранить ответы</button>`;
 
-                    // Загрузка ранее сохраненных ответов
                     test.questions.forEach((q, i) => {
                         const selectedAnswer = localStorage.getItem(`selectedAnswer_${index}_${i}`);
                         if (selectedAnswer) {
@@ -291,7 +284,6 @@
                         }
                     });
 
-                    // Обработчик для кнопки "Сохранить ответы"
                     const saveButton = document.querySelector(".save-answers");
                     saveButton.addEventListener("click", () => {
                         saveAnswers(index, test.questions.length);
@@ -300,22 +292,42 @@
             }
         }
 
-        function saveAnswers(testIndex, questionCount) {
+        async function saveAnswers(testIndex, questionCount) {
+            const token = localStorage.getItem("authToken"); // Получаем токен из localStorage
+            const answers = {};
             for (let i = 0; i < questionCount; i++) {
                 const selectedAnswer = document.querySelector(`input[name="answer${i}"]:checked`);
                 if (selectedAnswer) {
                     localStorage.setItem(`selectedAnswer_${testIndex}_${i}`, selectedAnswer.value);
+                    answers[`question_${i}`] = selectedAnswer.value; // Сохраняем ответ
                 } else {
                     localStorage.removeItem(`selectedAnswer_${testIndex}_${i}`);
                 }
             }
-            alert("Ответы сохранены!");
-            loadTests(); // Перезагрузить тесты для обновления интерфейса
+
+            try {
+                const response = await fetch(`https://yourapi.com/tests/${testIndex}/answers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // Добавляем токен в заголовок
+                    },
+                    body: JSON.stringify({ answers }) // Отправляем ответы на сервер
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при сохранении ответов');
+                }
+
+                alert("Ответы сохранены!");
+                loadTests(); // Перезагрузить тесты для обновления интерфейса
+            } catch (error) {
+                alert(error.message);
+            }
         }
 
         disciplineFilter.addEventListener("change", loadTests);
 
-        // Скрыть загрузчик
         window.addEventListener("load", () => {
             setTimeout(() => {
                 loader.classList.add("hidden");
