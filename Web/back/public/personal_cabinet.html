@@ -88,7 +88,7 @@
             border-bottom: 1px solid #ddd;
         }
 
-        .logout-btn {
+        .logout-btn, .edit-name-btn {
             background-color: #4c69e9;
             color: white;
             padding: 10px 20px;
@@ -98,9 +98,10 @@
             transition: background-color 0.3s;
             text-align: center; /* Центрирование текста */
             display: inline-block; /* Чтобы кнопка выглядела правильно */
+            margin-top: 10px; /* Отступ сверху для кнопки */
         }
 
-        .logout-btn:hover {
+        .logout-btn:hover, .edit-name-btn:hover {
             background-color: #3a54c1;
         }
     </style>
@@ -109,8 +110,9 @@
     <header>
         <nav class="navbar">
             <ul>
-                <li><a href="index">Главная</a></li>
-                <li><a href="start">Выход</a></li>
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="personal_cabinet.html">Личный кабинет</a></li>
+                <li><a href="start.html">Выход</a></li>
             </ul>
         </nav>
     </header>
@@ -124,7 +126,8 @@
                 <h3>Созданные дисциплины:</h3>
                 <ul id="disciplinesList"></ul>
             </div>
-            <button class="logout-btn"><a href="login">Войти в другой аккаунт</a></button>
+            <button class="edit-name-btn" onclick="editName()">Изменить ФИО</button>
+            <button class="logout-btn" onclick="redirectToLogin()">Войти в другой аккаунт</button>
         </section>
     </main>
     <script>
@@ -134,7 +137,7 @@
         const disciplinesList = document.getElementById("disciplinesList");
 
         // Загрузка данных пользователя из localStorage
-        function loadUserData() {
+        function loadUser Data() {
             const userData = JSON.parse(localStorage.getItem("user")) || {};
             usernameDisplay.textContent = userData.username || "Не указано";
             emailDisplay.textContent = userData.email || "Не указано";
@@ -150,9 +153,24 @@
             });
         }
 
+        // Функция для изменения ФИО
+        function editName() {
+            const newName = prompt("Введите новое ФИО:");
+            if (newName) {
+                const userData = JSON.parse(localStorage.getItem("user")) || {};
+                userData.username = newName;
+                localStorage.setItem("user", JSON.stringify(userData));
+                loadUser Data(); // Обновление отображаемых данных
+            }
+        }
+
+        // Функция для перенаправления на страницу входа
+        function redirectToLogin() {
+            window.location.href = "login.html"; // Перенаправление на страницу входа
+        }
 
         // Загрузка данных при загрузке страницы
-        loadUserData();
+        loadUser Data();
     </script>
 </body>
 </html>
