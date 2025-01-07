@@ -13,7 +13,6 @@
             overflow: hidden; /* Скрыть прокрутку во время загрузки */
         }
 
-        /* Элемент загрузки */
         .loader {
             position: fixed;
             top: 0;
@@ -145,6 +144,21 @@
         .filter {
             margin-bottom: 20px;
         }
+
+        .save-answers {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+
+        .save-answers:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -154,8 +168,8 @@
     <header>
         <nav class="navbar">
             <ul>
-                <li><a href="personal_cabinet">Личный кабинет</a></li>
-                <li><a href="start">Выход</a></li>
+                <li><a href="personal_cabinet.html">Личный кабинет</a></li>
+                <li><a href="start.html">Выход</a></li>
             </ul>
         </nav>
     </header>
@@ -174,7 +188,7 @@
             </div>
             <div class="show-not"></div>
             <ul class="tests"></ul>
-            <button class="create-new"><a href="creating" style="color: white; text-decoration: none;">Создать новый тест</a></button>
+            <button class="create-new"><a href="creating.html" style="color: white; text-decoration: none;">Создать новый тест</a></button>
         </section>
         <section class="current-test">
             <h2>Выберите тест для просмотра</h2>
@@ -200,7 +214,7 @@
             if (filteredTests.length > 0) {
                 filteredTests.forEach((item, index) => {
                     testsList.innerHTML += `
-                        <li class="test-item" data-index="${index}">
+                        <li class="test-item" data-index="${getTests.indexOf(item)}">
                             <h3>${item.title}</h3>
                             <p>${item.description}</p>
                         </li>`;
@@ -227,41 +241,76 @@
 
             if (getTests[index]) {
                 const test = getTests[index];
-                rightPanel.innerHTML = `
-                    <h2>${test.title}</h2>
-                    <p>${test.description}</p>
-                    <ul>
-                        ${test.questions.map((q, i) => `
-                            <li>
-                                <h3>${i + 1}. ${q.question}</h3>
-                                <div class="answers">
-                                    ${q.answers.map((answer, j) => `
-                                        <label>
-                                            <input type="radio" name="answer${i}" value="${j + 1}" /> ${answer}
-                                        </label><br>
-                                    `).join("")}
-                                </div>
-                            </li>
-                        `).join("")}
-                    </ul>`;
+                const answersSaved = test.questions.every((q, i) => localStorage.getItem(`selectedAnswer_${index}_${i}`));
+                
+                if (answersSaved) {
+                    // Показать сохраненные ответы
+                    rightPanel.innerHTML = `
+                        <h2>${test.title}</h2>
+                        <p>${test.description}</p>
+                        <ul>
+                            ${test.questions.map((q, i) => {
+                                const savedAnswer = localStorage.getItem(`selectedAnswer_${index}_${i}`);
+                                return `
+                                    <li>
+                                        <h3>${i + 1}. ${q.question}</h3>
+                                        <p>Ваш ответ: ${q.answers[savedAnswer - 1]}</p>
+                                    </li>`;
+                            }).join("")}
+                        </ul>
+                        <p>Ответы сохранены. Вы не можете их изменить.</p>`;
+                } else {
+                    // Показать вопросы с возможностью ответить
+                    rightPanel.innerHTML = `
+                        <h2>${test.title}</h2>
+                        <p>${test.description}</p>
+                        <ul>
+                            ${test.questions.map((q, i) => `
+                                <li>
+                                    <h3>${i + 1}. ${q.question}</h3>
+                                    <div class="answers">
+                                        ${q.answers.map((answer, j) => `
+                                            <label>
+                                                <input type="radio" name="answer${i}" value="${j + 1}" /> ${answer}
+                                            </label><br>
+                                        `).join("")}
+                                    </div>
+                                </li>
+                            `).join("")}
+                        </ul>
+                        <button class="save-answers">Сохранить ответы</button>`;
 
-                test.questions.forEach((q, i) => {
-                    const selectedAnswer = localStorage.getItem(`selectedAnswer_${index}_${i}`);
-                    if (selectedAnswer) {
-                        const answerInput = document.querySelector(`input[name="answer${i}"][value="${selectedAnswer}"]`);
-                        if (answerInput) {
-                            answerInput.checked = true; 
+                    // Загрузка ранее сохраненных ответов
+                    test.questions.forEach((q, i) => {
+                        const selectedAnswer = localStorage.getItem(`selectedAnswer_${index}_${i}`);
+                        if (selectedAnswer) {
+                            const answerInput = document.querySelector(`input[name="answer${i}"][value="${selectedAnswer}"]`);
+                            if (answerInput) {
+                                answerInput.checked = true; 
+                            }
                         }
-                    }
-                    const answers = document.querySelectorAll(`input[name="answer${i}"]`);
-                    answers.forEach((answer) => {
-                        answer.addEventListener("change", (event) => {
-                            const selectedAnswer = event.target.value;
-                            localStorage.setItem(`selectedAnswer_${index}_${i}`, selectedAnswer);
-                        });
                     });
-                });
+
+                    // Обработчик для кнопки "Сохранить ответы"
+                    const saveButton = document.querySelector(".save-answers");
+                    saveButton.addEventListener("click", () => {
+                        saveAnswers(index, test.questions.length);
+                    });
+                }
             }
+        }
+
+        function saveAnswers(testIndex, questionCount) {
+            for (let i = 0; i < questionCount; i++) {
+                const selectedAnswer = document.querySelector(`input[name="answer${i}"]:checked`);
+                if (selectedAnswer) {
+                    localStorage.setItem(`selectedAnswer_${testIndex}_${i}`, selectedAnswer.value);
+                } else {
+                    localStorage.removeItem(`selectedAnswer_${testIndex}_${i}`);
+                }
+            }
+            alert("Ответы сохранены!");
+            loadTests(); // Перезагрузить тесты для обновления интерфейса
         }
 
         disciplineFilter.addEventListener("change", loadTests);
