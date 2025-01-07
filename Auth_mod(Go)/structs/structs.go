@@ -91,7 +91,7 @@ type CodeAuthState struct {
 }
 
 // Формируем HTML-страницу с сообщением об успешной авторизации
-var AppLink = "http://127.0.0.1:5500/Black-Hammer-GP/Web/index.html" // Ссылка на приложение
+var AppLink = "http://localhost:5500/Web/index.html" // Ссылка на приложение
 var HtmlResponse = fmt.Sprintf(`
 	<!DOCTYPE html>
 		<html lang="ru">

@@ -3,5 +3,8 @@
       "axios": "^1.7.9",
       "ioredis": "^5.4.1",
       "node-fetch": "^3.3.2"
-    }
+    },
+      "scripts": {
+        "start" : "node server5500.js"
+      }
   }

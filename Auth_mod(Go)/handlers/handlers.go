@@ -17,9 +17,9 @@ var mongoConn = database.ConnectToMongo()
 var dbConn = mongoConn.Database("authDB")
 var UserCollection = dbConn.Collection("users")
 
-const clientIDGitHub = "Ov23liVkA4a0IpHIuOzp"        //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
-const clientIDYandex = "6785f7558d124ef8ad9f626c091f5e18"       //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
-const redirectURI = "http://localhost:5501/callback" //Для продуктивной версии Вашего приложения Redirect URI должен указывать на адрес Вашего сервера, например, https://yourdomain.com/callback.
+const clientIDGitHub = "Ov23liVkA4a0IpHIuOzp"             //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
+const clientIDYandex = "6785f7558d124ef8ad9f626c091f5e18" //Заменить на своё значение, после регистрацции приложения на соответсвующей платформе
+const redirectURI = "http://localhost:5501/callback"      //Для продуктивной версии Вашего приложения Redirect URI должен указывать на адрес Вашего сервера, например, https://yourdomain.com/callback.
 
 var stateStore = make(map[string]*structs.AuthState)
 var CodeStateStore = make(map[string]*structs.CodeAuthState)
@@ -173,7 +173,8 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 			// Устанавливаем заголовок Content-Type
 			w.Header().Set("Content-Type", "text/html")
 			// Отправляем HTML-ответ
-			fmt.Fprint(w, structs.HtmlResponse)
+			http.Redirect(w, r, "http://localhost:5502", http.StatusFound)
+			//fmt.Fprint(w, structs.HtmlResponse)
 		} else {
 			http.Error(w, "Invalid state", http.StatusBadRequest)
 		}

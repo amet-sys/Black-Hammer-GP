@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тесты</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            background-color: #f0f4f8;
+            color: #333;
+            overflow: hidden; /* Скрыть прокрутку во время загрузки */
+        }
+
+        /* Элемент загрузки */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Поверх всего контента */
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none; /* Отключить взаимодействие с элементом */
+        }
+
+        .loader h1 {
+            font-size: 24px;
+            color: #4c69e9;
+            animation: fadeIn 1s ease infinite alternate;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        header {
+            background-color: #4c69e9;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar ul {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .navbar li {
+            position: relative;
+            margin-right: 20px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        main {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .tests-list {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .current-test {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .test-item {
+            background-color: #e1f5fe;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+
+        .test-item:hover {
+            transform: scale(1.02);
+        }
+
+        .create-new {
+            background-color: #00aaff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .create-new:hover {
+            background-color: #0088cc;
+        }
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .filter {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <h1>Загрузка...</h1>
+    </div>
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a href="personal_cabinet">Личный кабинет</a></li>
+                <li><a href="start">Выход</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="tests-list">
+            <p class="title">Количество тестов: <span class="questsCounter"></span></p>
+            <div class="filter">
+                <label for="disciplineFilter">Выберите дисциплину:</label>
+                <select id="disciplineFilter">
+                    <option value="all">Все</option>
+                    <option value="Математика">Математика</option>
+                    <option value="Дел. Коммуникация">Дел. Коммуникация</option>
+                    <option value="Физика">Физика</option>
+                    <option value="Химия">Химия</option>
+                </select>
+            </div>
+            <div class="show-not"></div>
+            <ul class="tests"></ul>
+            <button class="create-new"><a href="creating" style="color: white; text-decoration: none;">Создать новый тест</a></button>
+        </section>
+        <section class="current-test">
+            <h2>Выберите тест для просмотра</h2>
+            <div class="right-panel"></div>
+        </section>
+    </main>
+    <script>
+        const questsCounter = document.querySelector(".questsCounter");
+        const disciplineFilter = document.getElementById("disciplineFilter");
+        const loader = document.querySelector(".loader");
+
+        function loadTests() {
+            const getTests = JSON.parse(localStorage.getItem("tests")) || [];
+            const testsList = document.querySelector(".tests");
+            testsList.innerHTML = "";
+
+            const selectedDiscipline = disciplineFilter.value;
+
+            const filteredTests = getTests.filter(test => 
+                selectedDiscipline === "all" || test.discipline === selectedDiscipline
+            );
+
+            if (filteredTests.length > 0) {
+                filteredTests.forEach((item, index) => {
+                    testsList.innerHTML += `
+                        <li class="test-item" data-index="${index}">
+                            <h3>${item.title}</h3>
+                            <p>${item.description}</p>
+                        </li>`;
+                });
+            } else {
+                const showNotElement = document.querySelector(".show-not");
+                showNotElement.innerHTML = `<h3>Тесты отсутствуют</h3>`;
+            }
+
+            questsCounter.textContent = filteredTests.length;
+
+            document.querySelectorAll(".test-item").forEach((item) => {
+                item.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    const index = item.getAttribute("data-index");
+                    displayTest(index);
+                });
+            });
+        }
+
+        function displayTest(index) {
+            const getTests = JSON.parse(localStorage.getItem("tests")) || [];
+            const rightPanel = document.querySelector(".right-panel");
+
+            if (getTests[index]) {
+                const test = getTests[index];
+                rightPanel.innerHTML = `
+                    <h2>${test.title}</h2>
+                    <p>${test.description}</p>
+                    <ul>
+                        ${test.questions.map((q, i) => `
+                            <li>
+                                <h3>${i + 1}. ${q.question}</h3>
+                                <div class="answers">
+                                    ${q.answers.map((answer, j) => `
+                                        <label>
+                                            <input type="radio" name="answer${i}" value="${j + 1}" /> ${answer}
+                                        </label><br>
+                                    `).join("")}
+                                </div>
+                            </li>
+                        `).join("")}
+                    </ul>`;
+
+                test.questions.forEach((q, i) => {
+                    const selectedAnswer = localStorage.getItem(`selectedAnswer_${index}_${i}`);
+                    if (selectedAnswer) {
+                        const answerInput = document.querySelector(`input[name="answer${i}"][value="${selectedAnswer}"]`);
+                        if (answerInput) {
+                            answerInput.checked = true; 
+                        }
+                    }
+                    const answers = document.querySelectorAll(`input[name="answer${i}"]`);
+                    answers.forEach((answer) => {
+                        answer.addEventListener("change", (event) => {
+                            const selectedAnswer = event.target.value;
+                            localStorage.setItem(`selectedAnswer_${index}_${i}`, selectedAnswer);
+                        });
+                    });
+                });
+            }
+        }
+
+        disciplineFilter.addEventListener("change", loadTests);
+
+        // Скрыть загрузчик
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                loader.classList.add("hidden");
+                document.body.style.overflow = "auto"; // Включить прокрутку
+            }, 500);
+        });
+
+        loadTests();
+    </script>
+</body>
+</html>

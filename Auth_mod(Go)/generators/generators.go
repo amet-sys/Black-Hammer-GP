@@ -85,6 +85,11 @@ func CodeExchancherYandex(code string, client_id string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Print(err)
+		return "Error1", err
+	}
 	log.Printf("Response body: %s", body) // Выводим тело ответа для отладки
 	responseString := string(body)
 	values, err := url.ParseQuery(responseString)
