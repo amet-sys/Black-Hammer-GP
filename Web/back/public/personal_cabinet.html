@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Личный кабинет</title>
     <style>
+        /* Стили остаются без изменений */
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             background-color: #f0f4f8;
             color: #333;
         }
-
         header {
             background-color: #4c69e9;
             padding: 20px;
@@ -21,24 +21,20 @@
             border-radius: 0 0 20px 20px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-
         .navbar {
             display: flex;
             align-items: center;
         }
-
         .navbar ul {
             display: flex;
             list-style-type: none;
             padding: 0;
             margin: 0;
         }
-
         .navbar li {
             position: relative;
             margin-right: 20px;
         }
-
         .navbar a {
             color: white;
             text-decoration: none;
@@ -46,17 +42,14 @@
             border-radius: 5px;
             transition: background-color 0.3s;
         }
-
         .navbar a:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-
         main {
             display: flex;
             padding: 20px;
             gap: 20px;
         }
-
         .profile {
             flex: 1;
             background-color: #ffffff;
@@ -64,31 +57,25 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
-
         .profile h2 {
             margin-bottom: 20px;
         }
-
         .profile p {
             margin-bottom: 10px;
             font-size: 16px;
         }
-
-        .disciplines {
+        .disciplines, .tests {
             margin-top: 20px;
         }
-
-        .disciplines ul {
+        .disciplines ul, .tests ul {
             list-style-type: none;
             padding: 0;
         }
-
-        .disciplines li {
+        .disciplines li, .tests li {
             padding: 5px 0;
             border-bottom: 1px solid #ddd;
         }
-
-        .logout-btn, .edit-name-btn {
+        .logout-btn, .edit-name-btn, .view-answers-btn {
             background-color: #4c69e9;
             color: white;
             padding: 10px 20px;
@@ -100,8 +87,7 @@
             display: inline-block; /* Чтобы кнопка выглядела правильно */
             margin-top: 10px; /* Отступ сверху для кнопки */
         }
-
-        .logout-btn:hover, .edit-name-btn:hover {
+        .logout-btn:hover, .edit-name-btn:hover, .view-answers-btn:hover {
             background-color: #3a54c1;
         }
     </style>
@@ -126,6 +112,10 @@
                 <h3>Созданные дисциплины:</h3>
                 <ul id="disciplinesList"></ul>
             </div>
+            <div class="tests">
+                <h3>Созданные тесты:</h3>
+                <ul id="testsList"></ul>
+            </div>
             <button class="edit-name-btn" onclick="editName()">Изменить ФИО</button>
             <button class="logout-btn" onclick="redirectToLogin()">Войти в другой аккаунт</button>
         </section>
@@ -135,25 +125,54 @@
         const emailDisplay = document.getElementById("emailDisplay");
         const platformDisplay = document.getElementById("platformDisplay");
         const disciplinesList = document.getElementById("disciplinesList");
+        const testsList = document.getElementById("testsList");
 
-        // Загрузка данных пользователя из localStorage
-        function loadUser Data() {
-            const userData = JSON.parse(localStorage.getItem("user")) || {};
-            usernameDisplay.textContent = userData.username || "Не указано";
-            emailDisplay.textContent = userData.email || "Не указано";
-            platformDisplay.textContent = userData.platform || "Не указано"; // Отображение платформы входа
+        async function loadUser Data() {
+            const token = localStorage.getItem("authToken"); // Получаем токен из localStorage
+            try {
+                const response = await fetch('https://yourapi.com/user', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}` // Добавляем токен в заголовок
+                    }
+                });
 
-            // Отображение созданных дисциплин
-            const disciplines = userData.disciplines || [];
-            disciplinesList.innerHTML = ""; // Очистка предыдущего списка
-            disciplines.forEach(discipline => {
-                const li = document.createElement("li");
-                li.textContent = discipline;
-                disciplinesList.appendChild(li);
-            });
+                if (!response.ok) {
+                    throw new Error('Ошибка при загрузке данных пользователя');
+                }
+
+                const userData = await response.json();
+                usernameDisplay.textContent = userData.username || "Не указано";
+                emailDisplay.textContent = userData.email || "Не указано";
+                platformDisplay.textContent = userData.platform || "Не указано"; // Отображение платформы входа
+
+                // Отображение созданных дисциплин
+                const disciplines = userData.disciplines || [];
+                disciplinesList.innerHTML = ""; // Очистка предыдущего списка
+                disciplines.forEach(discipline => {
+                    const li = document.createElement("li");
+                    li.textContent = discipline;
+                    disciplinesList.appendChild(li);
+                });
+
+                // Отображение созданных тестов
+                const tests = userData.tests || [];
+                testsList.innerHTML = ""; // Очистка предыдущего списка
+                tests.forEach(test => {
+                    const li = document.createElement("li");
+                    li.textContent = test.title; // Отображаем название теста
+                    const viewButton = document.createElement("button");
+                    viewButton.textContent = "Просмотреть ответы";
+                    viewButton.className = "view-answers-btn";
+                    viewButton.onclick = () => viewAnswers(test.title); // Обработчик для кнопки
+                    li.appendChild(viewButton);
+                    testsList.appendChild(li);
+                });
+            } catch (error) {
+                alert(error.message);
+            }
         }
 
-        // Функция для изменения ФИО
         function editName() {
             const newName = prompt("Введите новое ФИО:");
             if (newName) {
@@ -164,13 +183,38 @@
             }
         }
 
-        // Функция для перенаправления на страницу входа
         function redirectToLogin() {
             window.location.href = "login.html"; // Перенаправление на страницу входа
         }
 
-        // Загрузка данных при загрузке страницы
-        loadUser Data();
+        function viewAnswers(testTitle) {
+            const tests = JSON.parse(localStorage.getItem("tests")) || [];
+            const selectedTest = tests.find(test => test.title === testTitle);
+            if (selectedTest) {
+                const answers = selectedTest.answers || {};
+                let answersDisplay = `<h3>Ответы на тест "${testTitle}":</h3><ul>`;
+                for (const user in answers) {
+                    answersDisplay += `<li><strong>${user}</strong>: ${answers[user]}</li>`;
+                }
+                answersDisplay += `</ul>`;
+                const answersWindow = window.open("", "Ответы на тест", "width=600,height=400");
+                answersWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Ответы на тест</title>
+                    </head>
+                    <body>
+                        ${answersDisplay}
+                        <button onclick="window.close()">Закрыть</button>
+                    </body>
+                    </html>
+                `);
+            } else {
+                alert("Тест не найден.");
+            }
+        }
+
+        window.addEventListener("load", loadUser Data);
     </script>
 </body>
 </html>
