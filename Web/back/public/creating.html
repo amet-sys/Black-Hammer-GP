@@ -93,7 +93,7 @@
         <div id="questionsContainer"></div>
 
         <button id="addQuestionButton">Добавить вопрос</button>
-        <button onclick="writeNewQuestion()">Сохранить тест</button>
+        <button id="saveTestButton">Сохранить тест</button>
     </div>
 
     <script>
@@ -160,7 +160,6 @@
                 return alert("Добавьте хотя бы один вопрос!");
             }
 
-            const tests = JSON.parse(localStorage.getItem("tests")) || [];
             const questions = [];
 
             for (let i = 0; i < questionsContainer.children.length; i++) {
@@ -182,18 +181,28 @@
                 });
             }
 
-            tests.push({
+            // Получение существующих тестов из localStorage
+            const existingTests = JSON.parse(localStorage.getItem("tests")) || [];
+
+            // Создание нового теста
+            const testData = {
                 title: getTitle,
                 description: getText,
-                subject: getSubject, // Сохранение дисциплины
+                discipline: getSubject, // Сохраняем дисциплину
                 questions: questions,
-            });
+            };
 
-            localStorage.setItem("tests", JSON.stringify(tests));
+            // Добавление нового теста в массив
+            existingTests.push(testData);
+
+            // Сохранение обновленного массива тестов в localStorage
+            localStorage.setItem("tests", JSON.stringify(existingTests));
+
             alert("Тест успешно сохранен!");
-
-            window.location.href = "index";
+            window.location.href = "index.html"; // Перенаправление на главную страницу
         }
+
+        document.getElementById("saveTestButton").addEventListener("click", writeNewQuestion);
     </script>
 </body>
 </html>
