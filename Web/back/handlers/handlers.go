@@ -1,15 +1,14 @@
 package handlers
 
 import (
-	// "back/structs"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 
-	//"github.com/google/uuid"
 	"back/databases"
 	"context"
 
@@ -37,17 +36,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Print("Токен сессии провален")
 			}
+			log.Printf("Session token: %s",sessionToken)
 			loginToken, err := GenerateToken()
 			if err != nil {
 				log.Print("Токен входа провален")
 			}
-
+			log.Printf("Login token: %s",loginToken)
 			// Сохранение в Redis
 			err = rdb.Set(ctx, sessionToken, fmt.Sprintf("Анонимный:%s", loginToken), 0).Err()
 			if err != nil {
 				http.Error(w, "Ошибка сохранения в Redis", http.StatusInternalServerError)
 				return
 			}
+			// Устанавливаем токен в куки
+			http.SetCookie(w, &http.Cookie{
+				Name:  "session_token",
+				Value: sessionToken,
+				Path:  "/",
+			})
 
 			tmpl, err := template.ParseFiles("./public/login.html")
 			if err != nil {
@@ -66,13 +72,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 
-			// Устанавливаем токен в куки
-			http.SetCookie(w, &http.Cookie{
-				Name:  "session_token",
-				Value: sessionToken,
-				Path:  "/",
-			})
-
+			
+			
 			http.Error(w, "Session token not found", http.StatusUnauthorized)
 			return
 		}
@@ -95,13 +96,48 @@ func Starter(w http.ResponseWriter, r *http.Request) {
 }
 
 func About(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("refresh_token")
+	//получаем токен доступа
+	cookie, err := r.Cookie("access_token")
+	log.Print(cookie)
 	if err != nil {
+		log.Print("1")
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+	}
+	// Раскодирование JWT
+	AccessToken := cookie.Value
+	//получаем токен обновления
+	cookie, err = r.Cookie("refresh_token")
+	log.Print(cookie)
+	if err != nil {
+		log.Print("2")
 		http.Error(w, "Cookie not found", http.StatusUnauthorized)
 		return
 	}
 	// Раскодирование JWT
 	tokenString := cookie.Value
+	cookie, err = r.Cookie("session_token")
+	log.Print(cookie)
+	if err != nil {
+		log.Print("3", cookie)
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+	}
+	// Раскодирование JWT
+	sessionToken := cookie.Value
+	//Добавляем токен обновления и доступа в Redis
+	err = rdb.Del(ctx, sessionToken).Err()
+	if err != nil {
+		http.Error(w, "Ошибка удаления из Redis", http.StatusInternalServerError)
+		return
+	}
+
+	value := fmt.Sprintf("Авторизованный:%s, AccessToken:%s", tokenString, AccessToken)
+	err = rdb.Set(ctx, sessionToken, value, 0).Err()
+	if err != nil {
+		http.Error(w, "Ошибка сохранения в Redis", http.StatusInternalServerError)
+		return
+	}
 	// Парсим токен
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Проверяем метод подписи
@@ -157,4 +193,31 @@ func GenerateToken() (string, error) {
 	}
 	// Кодируем токен в base64
 	return base64.StdEncoding.EncodeToString(b), nil
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	//Удаляем все куки
+	http.SetCookie(w, &http.Cookie{
+        Name:    "access_token",
+        Value:   "",
+        Expires: time.Unix(0, 0), // Устанавливаем время истечения в прошлое
+        Path:    "/",              // Указываем путь, если необходимо
+    })
+
+    http.SetCookie(w, &http.Cookie{
+        Name:    "refresh_token",
+        Value:   "",
+        Expires: time.Unix(0, 0),
+        Path:    "/",
+    })
+
+    http.SetCookie(w, &http.Cookie{
+        Name:    "session_token",
+        Value:   "",
+        Expires: time.Unix(0, 0),
+        Path:    "/",
+    })
+	log.Print("Logout")
+	//Перенаправляем пользователя
+	http.ServeFile(w, r, "./public/logout.html")
 }

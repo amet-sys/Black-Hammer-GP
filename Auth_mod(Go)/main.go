@@ -11,6 +11,7 @@ import (
 func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/login", handlers.HandleAuth)
+	router.HandleFunc("/logout", handlers.HandleLogouter)
 	router.HandleFunc("/callback", handlers.HandleCallback)
 
 	// Запускаем сервер и обрабатываем возможные ошибки

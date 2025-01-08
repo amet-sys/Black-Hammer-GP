@@ -10,6 +10,7 @@ import (
 func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/login", handlers.LoginHandler)
+	router.HandleFunc("/logout", handlers.LogoutHandler)
 	router.HandleFunc("/start", handlers.Starter)
 	router.HandleFunc("/personal_cabinet", handlers.About)
 	router.HandleFunc("/creating", handlers.TestCreator)

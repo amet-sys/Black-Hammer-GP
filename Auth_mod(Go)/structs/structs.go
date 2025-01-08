@@ -50,18 +50,6 @@ var TeacherAccess = []string{
 	"quest:create",
 }
 
-// type TokenResponseGitHub struct {
-// 	AccessToken string `json:" access_token"`
-// 	Scope       string `json:"scope"`
-// 	TokenType   string `json:"token_type"`
-// }
-
-// type TokenResponseYandex struct {
-// 	AccessToken string `json:"access_token"`
-// 	Expiry      int    `json:"expires_in"`
-// 	TokenType   string `json:"token_type"`
-// }
-
 type AuthState struct {
 	ExpiresAt    time.Time `json:"expires_at"`
 	Status       string    `json:"status"`

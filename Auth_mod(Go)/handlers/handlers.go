@@ -11,7 +11,12 @@ import (
 
 	database "main.go/Mongo-db"
 	generators "main.go/generators"
+	"github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson"
+	"context"
 )
+
+const MySecretKey = ""
 
 var mongoConn = database.ConnectToMongo()
 var dbConn = mongoConn.Database("authDB")
@@ -210,4 +215,42 @@ func CodeAuth(token string) string {
 		Status:    token,
 	}
 	return code
+}
+
+func HandleLogouter(w http.ResponseWriter, r *http.Request){
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		http.Error(w, "Cookie not found", http.StatusUnauthorized)
+		return
+	}
+	// Раскодирование JWT
+	tokenString := cookie.Value
+	delete(stateStore, tokenString)
+	// Парсим токен
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Проверяем метод подписи
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Недопустимый метод подписи")
+		}
+		return []byte(MySecretKey), nil
+	})
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	var email string
+	// Проверяем, действителен ли токен
+	if token.Valid {
+		// Проверяем, что токен валиден
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			// Извлекаем электронную почту
+			email = claims["email"].(string)
+		}
+	}
+	filter := bson.D{{"email", email}}
+	_ , err = UserCollection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		log.Print(err)
+	}
+	http.Redirect(w, r, "http://localhost:5502/logout", http.StatusFound)
 }

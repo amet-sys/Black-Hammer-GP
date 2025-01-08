@@ -116,7 +116,7 @@
                 <ul id="testsList"></ul>
             </div>
             <button class="edit-name-btn" onclick="editName()">Изменить ФИО</button>
-            <button class="logout-btn" onclick="redirectToLogin()">Войти в другой аккаунт</button>
+            <a href="http://localhost:5501/logout"><button class="logout-btn">Выйти</button></a>
         </section>
     </main>
     <script>
@@ -181,11 +181,6 @@
                 loadUserData(); // Обновление отображаемых данных
             }
         }
-
-        function redirectToLogin() {
-            window.location.href = "login.html"; // Перенаправление на страницу входа
-        }
-
         function viewAnswers(testTitle) {
             const tests = JSON.parse(localStorage.getItem("tests")) || [];
             const selectedTest = tests.find(test => test.title === testTitle);
