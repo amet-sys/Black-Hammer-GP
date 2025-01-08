@@ -69,6 +69,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			})
 
 			if err != nil {
+				log.Print(err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 
