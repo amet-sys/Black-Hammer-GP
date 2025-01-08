@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Личный кабинет</title>
     <style>
-        /* Стили остаются без изменений */
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -106,13 +105,12 @@
             <h2>Личный кабинет</h2>
             <p><strong>Имя пользователя:</strong> {{.Name}}</p>
             <p><strong>Электронная почта:</strong> {{.Email}}</p>
-            <p><strong>Платформа входа:</strong> <span id="platformDisplay"></span></p>
             <div class="disciplines">
-                <h3>Созданные дисциплины:</h3>
+                <p><strong>Созданные дисциплины:</strong></p>
                 <ul id="disciplinesList"></ul>
             </div>
             <div class="tests">
-                <h3>Созданные тесты:</h3>
+                <p><strong>Созданные тесты:</strong></p>
                 <ul id="testsList"></ul>
             </div>
             <button class="edit-name-btn" onclick="editName()">Изменить ФИО</button>
@@ -122,11 +120,10 @@
     <script>
         const usernameDisplay = document.getElementById("usernameDisplay");
         const emailDisplay = document.getElementById("emailDisplay");
-        const platformDisplay = document.getElementById("platformDisplay");
         const disciplinesList = document.getElementById("disciplinesList");
         const testsList = document.getElementById("testsList");
 
-        async function loadUserData() {
+        async function loadUser Data() {
             const token = localStorage.getItem("authToken"); // Получаем токен из localStorage
             try {
                 const response = await fetch('https://yourapi.com/user', {
@@ -143,7 +140,6 @@
                 const userData = await response.json();
                 usernameDisplay.textContent = userData.username || "Не указано";
                 emailDisplay.textContent = userData.email || "Не указано";
-                platformDisplay.textContent = userData.platform || "Не указано"; // Отображение платформы входа
 
                 // Отображение созданных дисциплин
                 const disciplines = userData.disciplines || [];
@@ -178,9 +174,10 @@
                 const userData = JSON.parse(localStorage.getItem("user")) || {};
                 userData.username = newName;
                 localStorage.setItem("user", JSON.stringify(userData));
-                loadUserData(); // Обновление отображаемых данных
+                loadUser Data(); // Обновление отображаемых данных
             }
         }
+        
         function viewAnswers(testTitle) {
             const tests = JSON.parse(localStorage.getItem("tests")) || [];
             const selectedTest = tests.find(test => test.title === testTitle);
@@ -208,7 +205,7 @@
             }
         }
 
-        window.addEventListener("load", loadUserData);
+        window.addEventListener("load", loadUser Data);
     </script>
 </body>
 </html>
