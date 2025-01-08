@@ -80,7 +80,8 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 		// Поиск и запись пользователя в MongoDB
 		var user structs.User
 		var erro string
-		user, erro = generators.DatabaseUserWriter(email, UserCollection)
+		var name string
+		user, erro = generators.DatabaseUserWriter(email, name, UserCollection)
 		if erro != "" {
 			http.Error(w, "Failed to create user", http.StatusInternalServerError)
 			return
@@ -94,13 +95,23 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 		authState.AccessToken = accessToken
 		authState.RefreshToken = refreshToken
 		authState.Status = "Доступ предоставлен"
+		// Устанавливаем токены в куки
+		http.SetCookie(w, &http.Cookie{
+			Name:  "access_token",
+			Value: accessToken,
+			Path:  "/",
+		})
 
-		// Отправка ответа
+		http.SetCookie(w, &http.Cookie{
+			Name:  "refresh_token",
+			Value: refreshToken,
+			Path:  "/",
+		})
 
 		// Устанавливаем заголовок Content-Type
 		w.Header().Set("Content-Type", "text/html")
-		// Отправляем HTML-ответ
-		fmt.Fprint(w, structs.HtmlResponse)
+		// Отправляем ответ
+		http.Redirect(w, r, "http://localhost:5502/personal_cabinet", http.StatusFound)
 
 	} else {
 		if authState, exists := stateStore[token]; exists {
@@ -112,7 +123,7 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 			log.Print("Начало процесса")
 			// Обмен кода на токен доступа
 			code := r.URL.Query().Get("code") //Получение кода
-			var token, email string
+			var name, token, email string
 			var err error
 			if code == "" {
 				log.Print("Don't have the code")
@@ -134,14 +145,14 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 			// Получение данных о пользователе(только мыло)
 			switch Type {
 			case "github":
-				email, err = generators.GetEmailGithub(token)
+				email, name, err = generators.GetEmailGithub(token)
 				log.Print(email)
 				if err != nil {
 					log.Print("Undefind")
 				}
 
 			case "yandex":
-				email, err = generators.GetEmailYandex(token)
+				email, name, err = generators.GetEmailYandex(token)
 				if err != nil {
 					log.Print("Undefind")
 				}
@@ -153,7 +164,8 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 			// Поиск и запись пользователя в MongoDB
 			var user structs.User
 			var erro string
-			user, erro = generators.DatabaseUserWriter(email, UserCollection)
+			log.Print(name)
+			user, erro = generators.DatabaseUserWriter(email, name, UserCollection)
 			if erro != "" {
 				http.Error(w, "Failed to create user", http.StatusInternalServerError)
 				return
@@ -168,13 +180,23 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 			authState.RefreshToken = refreshToken
 			authState.Status = "Доступ предоставлен"
 
-			// Отправка ответа
+			// Устанавливаем токены в куки
+			http.SetCookie(w, &http.Cookie{
+				Name:  "access_token",
+				Value: accessToken,
+				Path:  "/",
+			})
+
+			http.SetCookie(w, &http.Cookie{
+				Name:  "refresh_token",
+				Value: refreshToken,
+				Path:  "/",
+			})
 
 			// Устанавливаем заголовок Content-Type
 			w.Header().Set("Content-Type", "text/html")
-			// Отправляем HTML-ответ
-			http.Redirect(w, r, "http://localhost:5502", http.StatusFound)
-			//fmt.Fprint(w, structs.HtmlResponse)
+			//Отправляем ответ
+			http.Redirect(w, r, "http://localhost:5502/personal_cabinet", http.StatusFound)
 		} else {
 			http.Error(w, "Invalid state", http.StatusBadRequest)
 		}

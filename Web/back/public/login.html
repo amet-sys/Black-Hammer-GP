@@ -136,13 +136,8 @@
 </body>
 
 <script>
-    function generateToken() {
-        // Генерация случайного токена
-        return Math.random().toString(36).substr(2, 10); // Генерирует строку из 10 символов
-    }
-
     function authorize(type) {
-        const loginToken = generateToken(); // Генерация токена
+        const loginToken = "{{.loginToken}}"; // Генерация токена
         window.location.href = `http://localhost:5501/login?type=${type}&state=${loginToken}`;
     }
 </script>

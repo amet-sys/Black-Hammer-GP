@@ -93,7 +93,7 @@
         <div id="questionsContainer"></div>
 
         <button id="addQuestionButton">Добавить вопрос</button>
-        <button id="saveTestButton">Сохранить тест</button>
+        <a href="index" id="saveTestButton"><button >Сохранить тест</button></a>
     </div>
 
     <script>
@@ -206,7 +206,6 @@
                 }
 
                 alert("Тест успешно сохранен!");
-                window.location.href = "index.html"; // Перенаправление на главную страницу
             } catch (error) {
                 alert(error.message);
             }

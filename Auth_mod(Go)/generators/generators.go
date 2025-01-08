@@ -104,61 +104,61 @@ func CodeExchancherYandex(code string, client_id string) (string, error) {
 }
 
 // Получаем почту с помощью токена в Гитхабе
-func GetEmailGithub(token string) (string, error) {
+func GetEmailGithub(token string) (string, string, error) {
 	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	req.Header.Set("Authorization", "token "+token)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer resp.Body.Close()
 
 	// Изменяем способ обработки ответа
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	var user *structs.GitHubUser
 	err = json.Unmarshal([]byte(body), &user)
 	if err != nil {
 		fmt.Println("Ошибка при парсинге JSON:", err)
-		return "", err
+		return "", "", err
 	}
-	return user.Email, nil
+	return user.Email, user.Name, nil
 }
 
 // Получаем почту с помощью токена в Яндексе
-func GetEmailYandex(token string) (string, error) {
+func GetEmailYandex(token string) (string, string, error) {
 	req, err := http.NewRequest("GET", "https://api.yandex.com/userinfo", nil)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	req.Header.Set("Authorization", "OAuth "+token)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer resp.Body.Close()
 
 	// Изменяем способ обработки ответа
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	var user *structs.YandexUser
 	err = json.Unmarshal([]byte(body), &user)
 	if err != nil {
 		fmt.Println("Ошибка при парсинге JSON:", err)
-		return "", err
+		return "", "", err
 	}
-	return user.Email, nil
+	return user.Email, user.Name, nil
 }
 
 // Генерация JWT токена
@@ -172,6 +172,7 @@ func GenerateTokens(user structs.User) (string, string) {
 	// Генерация JWT токена обновления
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": user.Email,
+		"name":  user.Name2,
 		"exp":   time.Now().Add(7 * 24 * time.Hour).Unix(),
 	})
 
@@ -194,7 +195,7 @@ func GetEmailFromRefreshToken(tokenString string) (string, string) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Недопустимый метод подписи")
 		}
-		return MySecretKey, nil
+		return []byte(MySecretKey), nil
 	})
 
 	if err != nil {
@@ -213,7 +214,7 @@ func GetEmailFromRefreshToken(tokenString string) (string, string) {
 	return "", "Токен не действителен"
 }
 
-func DatabaseUserWriter(email string, UserCollection *mongo.Collection) (structs.User, string) {
+func DatabaseUserWriter(email, name string, UserCollection *mongo.Collection) (structs.User, string) {
 	var user structs.User
 	var err error
 	var Role string
@@ -230,6 +231,7 @@ func DatabaseUserWriter(email string, UserCollection *mongo.Collection) (structs
 		}
 		user = structs.User{
 			Name:   "Anonyim" + strconv.Itoa(int(cnt)+1),
+			Name2:  "" + name,
 			Email:  email,
 			Roles:  []string{Role},
 			Tokens: []string{},

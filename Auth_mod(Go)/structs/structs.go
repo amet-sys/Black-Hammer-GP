@@ -71,6 +71,7 @@ type AuthState struct {
 
 type User struct {
 	Name   string   `bson:"name"`
+	Name2  string   `bson:"real-name"`
 	Email  string   `bson:"email"`
 	Roles  []string `bson:"roles"`
 	Access []string `bson:"access"`
@@ -79,9 +80,11 @@ type User struct {
 
 type GitHubUser struct {
 	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 
 type YandexUser struct {
+	Name  string `json:"login"`
 	Email string `json:"default_email"`
 }
 
