@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-var AdminAccess = []string{
+var TeacherAccess = []string{
 	"user:list:read",
 	"user:fullName:write",
 	"user:data:read",
@@ -40,7 +40,7 @@ var AdminAccess = []string{
 
 var StudentAccess = []string{}
 
-var TeacherAccess = []string{
+var AdminAccess = []string{
 	"user:list:read",
 	"user:fullName:write",
 	"user:data:read",

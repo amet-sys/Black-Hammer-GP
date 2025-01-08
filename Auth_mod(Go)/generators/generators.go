@@ -225,7 +225,7 @@ func DatabaseUserWriter(email, name string, UserCollection *mongo.Collection) (s
 		// Если пользователь не найден, создаем нового\
 		cnt, _ := UserCollection.CountDocuments(context.TODO(), struct{}{})
 		if cnt <= 4 {
-			Role = "Admin"
+			Role = "Teacher"
 		} else {
 			Role = "Student"
 		}
