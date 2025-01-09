@@ -6,6 +6,9 @@
     <title>Тесты</title>
     <style>
         /* Стили остаются без изменений */
+        ul {
+            list-style-type: none; /* Убираем маркеры списка */
+        }
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -132,24 +135,94 @@
                     <option value="Химия">Химия</option>
                 </select>
             </div>
-            <div class="show-not"></div>
             <ul>
                 {{range .}}
                     <li>
-                        <h3>{{.Title}}</h3>
+                        <h3 class="test-title" data-id="{{.GetID}}" data-cnt="{{.Cnt}}"><button>{{.Title}}</button></h3>
                         <p>{{.Description}}</p>
                         <p>Дисциплина: {{.Subject}}</p>
+                        <ul class="questions-hidden">
+                            {{range .Questions}}
+                                <li>
+                                    <h3>{{.QuestionText}}</h3>
+                                    <ul>
+                                        {{range .Options}}
+                                            <li>{{.}}</li>
+                                        {{end}}
+                                    </ul>
+                                    <input type="text" name="answer" class="user-answer">
+                                    <input type="hidden" value="{{.Correct}}" class="correct-answer">
+                                </li>
+                            {{end}}
+                        </ul>
                     </li>
                 {{end}}
             </ul>
             
-            <a href="creating" style="color: white; text-decoration: none;"><button class="create-new">Создать новый тест</button></a>
-        </section>
-        <section class="current-test">
-            <h2>Выберите тест для просмотра</h2>
-            <div class="right-panel"></div>
-        </section>
-    </main>
+            <a href="creating" style="color: white; text-decoration: none;">
+                <button class="create-new">Создать новый тест</button>
+            </a>
+            </section>
+            <div class="cur-test-rp">
+            <section class="current-test">
+                <h2>Выберите тест для просмотра</h2>
+                <div class="right-panel"></div>
+                <h1></h1>
+                <button id="check-answers">Проверить ответы</button> <!-- Кнопка для проверки ответов -->
+                <h1></h1>
+                <div id="result"></div> <!-- Место для вывода результата -->
+            </section>
+        </div>
+            
+            <script>
+                document.querySelectorAll('.test-title').forEach(item => {
+                    item.addEventListener('click', event => {
+                        const testTitle = item.querySelector('button').innerText; // Получаем название теста
+                        const testContent = item.parentElement.querySelector('.questions-hidden').innerHTML; // Получаем содержимое вопросов
+                        const cntValue = Number(item.getAttribute('data-cnt'));
+                        document.querySelector('.right-panel').innerHTML = testContent; // Обновляем правую панель
+                        document.querySelector('.right-panel').setAttribute('data-cnt', cntValue); // Сохраняем значение в правой панели
+                        document.querySelector('.right-panel').insertAdjacentHTML('afterbegin', `<h3>${testTitle}</h3>`);
+                    });
+                });
+            
+                document.getElementById('check-answers').addEventListener('click', () => {
+                    let score = 0;
+                    const answers = document.querySelectorAll('.user-answer'); // Получаем все поля для ответов
+            
+                    answers.forEach(answer => {
+                        const userAnswer = answer.value.trim(); // Ответ пользователя
+                        const correctAnswer = answer.parentElement.querySelector('.correct-answer').value; // Правильный ответ
+            
+                        if (userAnswer === correctAnswer) {
+                            score++; // Увеличиваем счетчик за правильный ответ
+                        }
+                    });
+            
+                    const totalQuestions = document.querySelector('.right-panel').getAttribute('data-cnt'); 
+                    // Выводим результат
+                    document.getElementById('result').innerText = `Ваши баллы: ${score} из ${totalQuestions}`; // Используем totalQuestions
+                });
+            </script>
+            <style>
+                 .cur-test-rp ul {
+        list-style-type: none; /* Убираем точки перед элементами списка */
+        padding: 0; /* Убираем отступы */
+        margin: 0; /* Убираем внешние отступы */
+    }
+                .questions-hidden {
+                    display: none; /* Скрываем элементы с классом hidden */
+                }
+                .questions-hidden ul{
+                    list-style-type: none; /* Убираем точки перед элементами списка */
+        padding: 0; /* Убираем отступы */
+        margin: 0; /* Убираем внешние отступы */
+                }
+                .hidden-always{
+                    display: none;
+                }
+            </style>
+            </main>
    
 </body>
 </html>

@@ -1,5 +1,7 @@
 package structs
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type UserSession struct {
 	Status     string `json:"status"`
 	LoginToken string `json:"login_token"`
@@ -26,14 +28,21 @@ type Question struct {
 	Correct      string   `json:"correct"`
 }
 
-type TestVivod struct {
-	Title       string `json:"title" bson:"title"`
-	Description string `json:"description" bson:"description"`
-	Subject     string `json:"subject" bson:"subject"`
+type Questionvivod struct {
+	QuestionText string   `json:"questiontext" bson:"questiontext"`
+	Options      []string `json:"options" bson:"options"`
+	Correct      string   `json:"correct" bson:"correct"`
 }
 
-type QuestionVivod struct {
-	QuestionText string   `json:"question" bson:"QuestionText"`
-	Options      []string `json:"options" bson:"Options"`
-	Correct      string   `json:"correct" bson:"Correct"`
+type TestVivod struct {
+	ID          primitive.ObjectID `json:"_id" bson:"_id"`
+	Cnt         int                `json:"cnt"`
+	Title       string             `json:"title" bson:"title"`
+	Description string             `json:"description" bson:"description"`
+	Subject     string             `json:"subject" bson:"subject"`
+	Questions   []Question         `json:"questions" bson:"questions"`
+}
+
+func (t *TestVivod) GetID() string {
+	return t.ID.Hex() // Возвращает строку без ObjectID()
 }

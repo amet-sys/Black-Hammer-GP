@@ -42,6 +42,10 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	for i := range tests {
+
+		tests[i].Cnt = len(tests[i].Questions)
+	}
 
 	// Создаем и выполняем шаблон
 	tmpl, err := template.ParseFiles("./public/index.html")
@@ -53,10 +57,9 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	// Передаем в шаблон
 	err = tmpl.Execute(w, tests)
 	if err != nil {
+		log.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	// log.Print("Index")
-	// http.ServeFile(w, r, "./public/index.html")
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -265,7 +268,7 @@ func SubmitHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		http.ServeFile(w, r, "./public/index.html")
+		http.Redirect(w, r, "/index", http.StatusFound)
 	}
 }
 
