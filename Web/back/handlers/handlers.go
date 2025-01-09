@@ -34,6 +34,8 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Получаем куки из запроса
+
+	log.Print("Login")
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		if err == http.ErrNoCookie {
@@ -90,7 +92,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Если кука найдена, получаем значение токена
 	sessionToken := cookie.Value
 	log.Printf("Session Token: %s", sessionToken)
-	log.Print("Login")
 	http.ServeFile(w, r, "./public/login.html")
 }
 
@@ -186,7 +187,7 @@ func About(w http.ResponseWriter, r *http.Request) {
 
 func TestCreator(w http.ResponseWriter, r *http.Request) {
 	log.Print("Creator")
-	http.ServeFile(w, r, "./public/creating.html")
+	http.ServeFile(w, r, "./public/creat.html")
 }
 
 func GenerateToken() (string, error) {

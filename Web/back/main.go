@@ -4,12 +4,12 @@ import (
 	"back/handlers"
 	"fmt"
 	"log"
-	"net/http"	
+	"net/http"
 )
 
 func main() {
 	router := http.NewServeMux()
-	router.HandleFunc("/submit", handlers.SubmitHandler)
+	//router.HandleFunc("/submit", handlers.SubmitHandler)
 	router.HandleFunc("/login", handlers.LoginHandler)
 	router.HandleFunc("/logout", handlers.LogoutHandler)
 	router.HandleFunc("/start", handlers.Starter)
