@@ -19,8 +19,8 @@ func main() {
 	router.HandleFunc("/index", handlers.IndexHandler)
 	//router.HandleFunc("/", handlers.Starter)
 
-	fileServer := http.FileServer(http.Dir("/public"))
-	router.Handle("/public/", http.StripPrefix("/public/", fileServer))
+	// fileServer := http.FileServer(http.Dir("/public"))
+	// router.Handle("/public/", http.StripPrefix("/public/", fileServer))
 
 	// Запускаем сервер и обрабатываем возможные ошибки
 	log.Println("Запуск сервера на порту :5502 ")
