@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тесты</title>
+    <style>
+        /* Стили остаются без изменений */
+        ul {
+            list-style-type: none; /* Убираем маркеры списка */
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            background-color: #f0f4f8;
+            color: #333;
+            overflow: hidden; /* Скрыть прокрутку во время загрузки */
+        }
+        header {
+            background-color: #4c69e9;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .navbar {
+            display: flex;
+            align-items: center;
+        }
+        .navbar ul {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .navbar li {
+            position: relative;
+            margin-right: 20px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        main {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+        .tests-list {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .current-test {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .test-item {
+            background-color: #e1f5fe;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        .test-item:hover {
+            transform: scale(1.02);
+        }
+        .create-new {
+            background-color: #00aaff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .create-new:hover {
+            background-color: #0088cc;
+        }
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .filter {
+            margin-bottom: 20px;
+        }
+        .save-answers {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        .save-answers:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a href="personal_cabinet">Личный кабинет</a></li>
+                <li><a href="start">Выход</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="tests-list">
+            <p class="title">Количество тестов: <span class="questsCounter"></span></p>
+            <div class="filter">
+                <label for="disciplineFilter">Выберите дисциплину:</label>
+                <select id="disciplineFilter">
+                    <option value="all">Все</option>
+                    <option value="Математика">Математика</option>
+                    <option value="Дел. Коммуникация">Дел. Коммуникация</option>
+                    <option value="Физика">Физика</option>
+                    <option value="Химия">Химия</option>
+                </select>
+            </div>
+            <ul>
+                {{range .}}
+                    <li>
+                        <h3 class="test-title" data-id="{{.GetID}}" data-cnt="{{.Cnt}}"><button>{{.Title}}</button></h3>
+                        <p>{{.Description}}</p>
+                        <p>Дисциплина: {{.Subject}}</p>
+                        <ul class="questions-hidden">
+                            {{range .Questions}}
+                                <li>
+                                    <h3>{{.QuestionText}}</h3>
+                                    <ul>
+                                        {{range .Options}}
+                                            <li>{{.}}</li>
+                                        {{end}}
+                                    </ul>
+                                    <input type="text" name="answer" class="user-answer">
+                                    <input type="hidden" value="{{.Correct}}" class="correct-answer">
+                                </li>
+                            {{end}}
+                        </ul>
+                    </li>
+                {{end}}
+            </ul>
+            
+            <a href="creating" style="color: white; text-decoration: none;">
+                <button class="create-new">Создать новый тест</button>
+            </a>
+            </section>
+            <div class="cur-test-rp">
+            <section class="current-test">
+                <h2>Выберите тест для просмотра</h2>
+                <div class="right-panel"></div>
+                <h1></h1>
+                <button id="check-answers">Проверить ответы</button> <!-- Кнопка для проверки ответов -->
+                <h1></h1>
+                <div id="result"></div> <!-- Место для вывода результата -->
+            </section>
+        </div>
+            
+            <script>
+                document.querySelectorAll('.test-title').forEach(item => {
+                    item.addEventListener('click', event => {
+                        const testTitle = item.querySelector('button').innerText; // Получаем название теста
+                        const testContent = item.parentElement.querySelector('.questions-hidden').innerHTML; // Получаем содержимое вопросов
+                        const cntValue = Number(item.getAttribute('data-cnt'));
+                        document.querySelector('.right-panel').innerHTML = testContent; // Обновляем правую панель
+                        document.querySelector('.right-panel').setAttribute('data-cnt', cntValue); // Сохраняем значение в правой панели
+                        document.querySelector('.right-panel').insertAdjacentHTML('afterbegin', `<h3>${testTitle}</h3>`);
+                    });
+                });
+            
+                document.getElementById('check-answers').addEventListener('click', () => {
+                    let score = 0;
+                    const answers = document.querySelectorAll('.user-answer'); // Получаем все поля для ответов
+            
+                    answers.forEach(answer => {
+                        const userAnswer = answer.value.trim(); // Ответ пользователя
+                        const correctAnswer = answer.parentElement.querySelector('.correct-answer').value; // Правильный ответ
+            
+                        if (userAnswer === correctAnswer) {
+                            score++; // Увеличиваем счетчик за правильный ответ
+                        }
+                    });
+            
+                    const totalQuestions = document.querySelector('.right-panel').getAttribute('data-cnt'); 
+                    // Выводим результат
+                    document.getElementById('result').innerText = `Ваши баллы: ${score} из ${totalQuestions}`; // Используем totalQuestions
+                });
+            </script>
+            <style>
+                 .cur-test-rp ul {
+        list-style-type: none; /* Убираем точки перед элементами списка */
+        padding: 0; /* Убираем отступы */
+        margin: 0; /* Убираем внешние отступы */
+    }
+                .questions-hidden {
+                    display: none; /* Скрываем элементы с классом hidden */
+                }
+                .questions-hidden ul{
+                    list-style-type: none; /* Убираем точки перед элементами списка */
+        padding: 0; /* Убираем отступы */
+        margin: 0; /* Убираем внешние отступы */
+                }
+                .hidden-always{
+                    display: none;
+                }
+            </style>
+            </main>
+   
+</body>
+</html>
