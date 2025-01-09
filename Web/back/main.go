@@ -4,17 +4,19 @@ import (
 	"back/handlers"
 	"fmt"
 	"log"
-	"net/http"
+	"net/http"	
 )
 
 func main() {
 	router := http.NewServeMux()
+	router.HandleFunc("/submit", handlers.SubmitHandler)
 	router.HandleFunc("/login", handlers.LoginHandler)
 	router.HandleFunc("/logout", handlers.LogoutHandler)
 	router.HandleFunc("/start", handlers.Starter)
 	router.HandleFunc("/personal_cabinet", handlers.About)
 	router.HandleFunc("/creating", handlers.TestCreator)
 	router.HandleFunc("/index", handlers.IndexHandler)
+	//router.HandleFunc("/", handlers.Starter)
 
 	fileServer := http.FileServer(http.Dir("/public"))
 	router.Handle("/public/", http.StripPrefix("/public/", fileServer))

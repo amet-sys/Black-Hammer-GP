@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
@@ -212,6 +212,59 @@
         }
 
         document.getElementById("saveTestButton").addEventListener("click", writeNewQuestion);
+    </script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание Теста</title>
+</head>
+<body>
+    <h1>Создание Теста</h1>
+    <form action="/submit" method="post">
+        <label for="title">Название теста:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="description">Описание теста:</label><br>
+        <textarea id="description" name="description" required></textarea><br><br>
+
+        <label for="subject">Дисциплина теста:</label><br>
+        <input type="text" id="subject" name="subject" required><br><br>
+
+        <h3>Вопросы и варианты ответов:</h3>
+        <div id="questions">
+            <div class="question">
+                <label for="question">Вопрос:</label><br>
+                <input type="text" name="questions" required><br>
+                <label for="options">Варианты ответов (через запятую):</label><br>
+                <input type="text" name="options" required><br>
+                <label for="correct">Правильный ответ:</label><br>
+                <input type="text" name="correct" required><br><br>
+            </div>
+        </div>
+        <button type="button" onclick="addQuestion()">Добавить вопрос</button><br><br>
+        <input type="submit" value="Создать тест">
+    </form>
+
+    <script>
+        function addQuestion() {
+            const questionsDiv = document.getElementById('questions');
+            const newQuestion = document.createElement('div');
+            newQuestion.className = 'question';
+            newQuestion.innerHTML = `
+                <label for="question">Вопрос:</label><br>
+                <input type="text" name="questions" required><br>
+                <label for="options">Варианты ответов (через запятую):</label><br>
+                <input type="text" name="options" required><br>
+                <label for="correct">Правильный ответ:</label><br>
+                <input type="text" name="correct" required><br><br>
+            `;
+            questionsDiv.appendChild(newQuestion);
+        }
     </script>
 </body>
 </html>

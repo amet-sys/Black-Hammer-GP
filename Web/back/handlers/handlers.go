@@ -7,9 +7,12 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"back/databases"
+	"back/structs"
 	"context"
 
 	"github.com/dgrijalva/jwt-go"
@@ -17,6 +20,9 @@ import (
 
 const MySecretKey = ""
 
+var mongoConn = databases.ConnectToMongo()
+var dbConn = mongoConn.Database("TestsDB")
+var TestsCollection = dbConn.Collection("Tests")
 var rdb = databases.ConnectToRedis()
 var ctx = context.Background()
 
@@ -36,12 +42,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Print("Токен сессии провален")
 			}
-			log.Printf("Session token: %s",sessionToken)
+			log.Printf("Session token: %s", sessionToken)
 			loginToken, err := GenerateToken()
 			if err != nil {
 				log.Print("Токен входа провален")
 			}
-			log.Printf("Login token: %s",loginToken)
+			log.Printf("Login token: %s", loginToken)
 			// Сохранение в Redis
 			err = rdb.Set(ctx, sessionToken, fmt.Sprintf("Анонимный:%s", loginToken), 0).Err()
 			if err != nil {
@@ -73,8 +79,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 
-			
-			
 			http.Error(w, "Session token not found", http.StatusUnauthorized)
 			return
 		}
@@ -199,26 +203,69 @@ func GenerateToken() (string, error) {
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	//Удаляем все куки
 	http.SetCookie(w, &http.Cookie{
-        Name:    "access_token",
-        Value:   "",
-        Expires: time.Unix(0, 0), // Устанавливаем время истечения в прошлое
-        Path:    "/",              // Указываем путь, если необходимо
-    })
+		Name:    "access_token",
+		Value:   "",
+		Expires: time.Unix(0, 0), // Устанавливаем время истечения в прошлое
+		Path:    "/",             // Указываем путь, если необходимо
+	})
 
-    http.SetCookie(w, &http.Cookie{
-        Name:    "refresh_token",
-        Value:   "",
-        Expires: time.Unix(0, 0),
-        Path:    "/",
-    })
+	http.SetCookie(w, &http.Cookie{
+		Name:    "refresh_token",
+		Value:   "",
+		Expires: time.Unix(0, 0),
+		Path:    "/",
+	})
 
-    http.SetCookie(w, &http.Cookie{
-        Name:    "session_token",
-        Value:   "",
-        Expires: time.Unix(0, 0),
-        Path:    "/",
-    })
+	http.SetCookie(w, &http.Cookie{
+		Name:    "session_token",
+		Value:   "",
+		Expires: time.Unix(0, 0),
+		Path:    "/",
+	})
 	log.Print("Logout")
 	//Перенаправляем пользователя
 	http.ServeFile(w, r, "./public/logout.html")
+}
+
+func SubmitHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Submit")
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+
+		test := structs.Test{
+			Title:       r.FormValue("title"),
+			Description: r.FormValue("description"),
+			Subject:     r.FormValue("subject"),
+		}
+
+		questions := r.Form["questions"]
+		options := r.Form["options"]
+		corrects := r.Form["correct"]
+
+		for i := 0; i < len(questions); i++ {
+			question := structs.Question{
+				QuestionText: questions[i],
+				Options:      splitOptions(options[i]),
+				Correct:      corrects[i],
+			}
+			test.Questions = append(test.Questions, question)
+		}
+
+		// Подключение к MongoDB
+		_, err := TestsCollection.InsertOne(context.TODO(), test)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		http.ServeFile(w, r, "./public/index.html")
+	}
+}
+
+func splitOptions(options string) []string {
+	options, err := url.QueryUnescape(options)
+	if err != nil {
+		log.Print("Split Options Error: ", err)
+	}
+	values := strings.Split(options, ",")
+	return values
 }
