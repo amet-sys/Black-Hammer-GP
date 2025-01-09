@@ -67,6 +67,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Print("Login")
 	cookie, err := r.Cookie("session_token")
+	log.Print(cookie)
 	if err != nil {
 		if err == http.ErrNoCookie {
 			// Кука не найдена
@@ -74,6 +75,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Print("Токен сессии провален")
 			}
+			log.Print(cookie)
 			log.Printf("Session token: %s", sessionToken)
 			loginToken, err := GenerateToken()
 			if err != nil {

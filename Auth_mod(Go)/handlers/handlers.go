@@ -185,6 +185,7 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 			authState.AccessToken = accessToken
 			authState.RefreshToken = refreshToken
 			authState.Status = "Доступ предоставлен"
+			generators.UserUpdate(email, refreshToken, accessToken, UserCollection)
 
 			// Устанавливаем токены в куки
 			http.SetCookie(w, &http.Cookie{

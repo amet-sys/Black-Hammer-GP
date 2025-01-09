@@ -254,3 +254,19 @@ func DatabaseUserWriter(email, name string, UserCollection *mongo.Collection) (s
 	}
 	return user, ""
 }
+func UserUpdate(email, accessToken, refreshToken string, UserCollection *mongo.Collection) {
+	filter := bson.M{"email": email}
+
+	// Данные для обновления
+	update := bson.M{
+		"$set": bson.M{
+			"tokens": []string{accessToken, refreshToken},
+		},
+	}
+
+	// Выполнение обновления
+	_, err := UserCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
