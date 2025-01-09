@@ -16,6 +16,7 @@ import (
 	"context"
 
 	"github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 const MySecretKey = ""
@@ -27,9 +28,35 @@ var rdb = databases.ConnectToRedis()
 var ctx = context.Background()
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-
+	// Получаем все тесты
 	log.Print("Index")
-	http.ServeFile(w, r, "./public/index.html")
+	cursor, err := TestsCollection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.TODO())
+
+	var tests []structs.TestVivod
+	if err = cursor.All(context.TODO(), &tests); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Создаем и выполняем шаблон
+	tmpl, err := template.ParseFiles("./public/index.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Передаем в шаблон
+	err = tmpl.Execute(w, tests)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	// log.Print("Index")
+	// http.ServeFile(w, r, "./public/index.html")
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -187,7 +214,7 @@ func About(w http.ResponseWriter, r *http.Request) {
 
 func TestCreator(w http.ResponseWriter, r *http.Request) {
 	log.Print("Creator")
-	http.ServeFile(w, r, "./public/creat.html")
+	http.ServeFile(w, r, "./public/create.html")
 }
 
 func GenerateToken() (string, error) {
@@ -202,27 +229,7 @@ func GenerateToken() (string, error) {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	//Удаляем все куки
-	http.SetCookie(w, &http.Cookie{
-		Name:    "access_token",
-		Value:   "",
-		Expires: time.Unix(0, 0), // Устанавливаем время истечения в прошлое
-		Path:    "/",             // Указываем путь, если необходимо
-	})
 
-	http.SetCookie(w, &http.Cookie{
-		Name:    "refresh_token",
-		Value:   "",
-		Expires: time.Unix(0, 0),
-		Path:    "/",
-	})
-
-	http.SetCookie(w, &http.Cookie{
-		Name:    "session_token",
-		Value:   "",
-		Expires: time.Unix(0, 0),
-		Path:    "/",
-	})
 	log.Print("Logout")
 	//Перенаправляем пользователя
 	http.ServeFile(w, r, "./public/logout.html")
@@ -269,4 +276,29 @@ func splitOptions(options string) []string {
 	}
 	values := strings.Split(options, ",")
 	return values
+}
+
+func DeleteCoockie(w http.ResponseWriter, r *http.Request) {
+	// Удаляем все куки
+	http.SetCookie(w, &http.Cookie{
+		Name:    "access_token",
+		Value:   "",
+		Expires: time.Unix(0, 0), // Устанавливаем время истечения в прошлое
+		Path:    "/",             // Указываем путь, если необходимо
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "refresh_token",
+		Value:   "",
+		Expires: time.Unix(0, 0),
+		Path:    "/",
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "session_token",
+		Value:   "",
+		Expires: time.Unix(0, 0),
+		Path:    "/",
+	})
+	http.Redirect(w, r, "http://localhost:5502/logout", http.StatusFound)
 }

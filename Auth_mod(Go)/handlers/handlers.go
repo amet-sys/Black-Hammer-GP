@@ -9,11 +9,12 @@ import (
 
 	structs "main.go/structs"
 
-	database "main.go/Mongo-db"
-	generators "main.go/generators"
+	"context"
+
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
-	"context"
+	database "main.go/Mongo-db"
+	generators "main.go/generators"
 )
 
 const MySecretKey = ""
@@ -217,7 +218,7 @@ func CodeAuth(token string) string {
 	return code
 }
 
-func HandleLogouter(w http.ResponseWriter, r *http.Request){
+func HandleLogouter(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
 		http.Error(w, "Cookie not found", http.StatusUnauthorized)
@@ -248,9 +249,9 @@ func HandleLogouter(w http.ResponseWriter, r *http.Request){
 		}
 	}
 	filter := bson.D{{"email", email}}
-	_ , err = UserCollection.DeleteOne(context.TODO(), filter)
+	_, err = UserCollection.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		log.Print(err)
 	}
-	http.Redirect(w, r, "http://localhost:5502/logout", http.StatusFound)
+	http.Redirect(w, r, "http://localhost:5502/delete-coockie", http.StatusFound)
 }

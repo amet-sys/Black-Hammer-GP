@@ -9,7 +9,8 @@ import (
 
 func main() {
 	router := http.NewServeMux()
-	//router.HandleFunc("/submit", handlers.SubmitHandler)
+	router.HandleFunc("/submit", handlers.SubmitHandler)
+	router.HandleFunc("/delete-coockie", handlers.DeleteCoockie)
 	router.HandleFunc("/login", handlers.LoginHandler)
 	router.HandleFunc("/logout", handlers.LogoutHandler)
 	router.HandleFunc("/start", handlers.Starter)
