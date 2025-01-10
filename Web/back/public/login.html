@@ -137,7 +137,8 @@
 
 <script>
     function authorize(type) {
-        const loginToken = "{{.loginToken}}"; // Генерация токена
+        const loginToken = "{{.LoginToken}}"; // Генерация токена
+        console.log(loginToken)
         window.location.href = `http://localhost:5501/login?type=${type}&state=${loginToken}`;
     }
 </script>
